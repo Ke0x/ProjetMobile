@@ -12,7 +12,9 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import {getNowPlayingMovies} from '../../Api';
 import SelectedMovie from './Components/SelectedMovie';
 import * as Animatable from 'react-native-animatable';
+import auth from '@react-native-firebase/auth';
 import LottieView from 'lottie-react-native';
+import Colors from '../../Assets/Colors';
 
 const Home = ({navigation}: {navigation: any}) => {
   const [movies, setMovies] = useState<any>([]);
@@ -20,6 +22,19 @@ const Home = ({navigation}: {navigation: any}) => {
   const [winningMovie, setWinningMovie] = useState<any>();
 
   useEffect(() => {
+    auth()
+      .signInAnonymously()
+      .then(() => {
+        console.log('User signed in anonymously');
+      })
+      .catch(error => {
+        if (error.code === 'auth/operation-not-allowed') {
+          console.log('Enable anonymous in your firebase console.');
+        }
+
+        console.error(error);
+      });
+
     const getMovies = async () => {
       const movies = await getNowPlayingMovies();
 
@@ -58,7 +73,7 @@ const Home = ({navigation}: {navigation: any}) => {
           <View style={styles.selectedIndicator}>
             <Image
               style={styles.validIcon}
-              source={require('../../Images/verifie.png')}
+              source={require('../../Assets/Images/verifie.png')}
             />
           </View>
         ) : null}
@@ -71,7 +86,6 @@ const Home = ({navigation}: {navigation: any}) => {
   }
 
   const RenderSelectedItem = (item: any) => {
-    console.log(item);
     return <SelectedMovie item={item} />;
   };
 
@@ -92,7 +106,7 @@ const Home = ({navigation}: {navigation: any}) => {
         onPress={() => {
           const random = getRandomInt(selectedMovies.length);
           setWinningMovie(selectedMovies[random]);
-          console.log(winningMovie);
+          navigation.navigate('MovieList', {list: selectedMovies});
         }}>
         <Text style={styles.selectText}>Select Movie !</Text>
       </TouchableOpacity>
@@ -106,7 +120,7 @@ const Home = ({navigation}: {navigation: any}) => {
             {winningMovie.title}
           </Animatable.Text>
           <LottieView
-            source={require('../../Images/animation.json')}
+            source={require('../../Assets/Images/animation.json')}
             autoPlay
             loop
           />
@@ -153,11 +167,11 @@ const styles = StyleSheet.create({
   },
   selectButton: {
     height: 40,
-    backgroundColor: 'rgb(227, 136, 79)',
+    backgroundColor: Colors.mainColor,
     marginHorizontal: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 15,
+    borderRadius: 20,
   },
   selectText: {
     color: 'white',
